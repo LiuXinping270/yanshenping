@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>深渊的回响 - 互动影像展</title>
+  <style>
+    body, html {
+      margin: 0; padding: 0; width: 100%; height: 100%;
+      background-color: #040914; /* 极低饱和度深海蓝 */
+      font-family: "PingFang SC", "Microsoft YaHei", serif;
+      overflow: hidden;
+      color: #e2e8f0;
+    }
+    #canvas-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
+    
+    /* 严谨的水平与垂直网格排版 */
+    #ui-layer {
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      z-index: 10; pointer-events: none;
+      display: grid;
+      grid-template-rows: 100px 1fr 100px;
+      grid-template-columns: 80px 1fr 80px;
+      padding: 2vw; box-sizing: border-box;
+    }
+
+    /* 顶部横向信息 */
+    .header {
+      grid-row: 1; grid-column: 1 / 4;
+      display: flex; justify-content: space-between; align-items: flex-start;
+      border-top: 1px solid rgba(234, 179, 8, 0.4); padding-top: 15px;
+    }
+    .brand { font-size: 12px; letter-spacing: 4px; color: #94a3b8; text-transform: uppercase; }
+    .nav-indicator { display: flex; gap: 8px; }
+    .dot { width: 6px; height: 6px; background: #334155; border-radius: 50%; transition: 0.3s; }
+    .dot.active { background: #eab308; box-shadow: 0 0 10px rgba(234,179,8,0.8); }
+
+    /* 左侧竖排文本 */
+    .text-content {
+      grid-row: 2; grid-column: 1;
+      position: relative; height: 100%;
+      display: flex; flex-direction: row-reverse; gap: 20px; align-items: center;
+    }
+    .title-vertical {
+      writing-mode: vertical-rl; font-size: 2.5rem; letter-spacing: 0.5em;
+      font-weight: 300; margin: 0; color: #f8fafc;
+      text-shadow: 0 4px 20px rgba(0,0,0,0.5);
+    }
+    .desc-vertical {
+      writing-mode: vertical-rl; font-size: 14px; color: #eab308;
+      letter-spacing: 0.3em; line-height: 2; font-family: monospace;
+    }
+
+    /* 底部交互提示 */
+    .footer {
+      grid-row: 3; grid-column: 1 / 4;
+      display: flex; justify-content: space-between; align-items: flex-end;
+      border-bottom: 1px solid rgba(234, 179, 8, 0.4); padding-bottom: 15px;
+    }
+    .hint {
+      font-size: 11px; letter-spacing: 2px; color: #94a3b8;
+      pointer-events: auto; cursor: pointer; text-transform: uppercase;
+    }
+    .hint:hover { color: #eab308; }
+  </style>
+  
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+        "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+      }
+    }
+  </script>
+</head>
+<body>
+
+  <div id="ui-layer">
+    <div class="header">
+      <div class="brand">Echoes of the Abyss</div>
+      <div class="nav-indicator" id="dots-container"></div>
+    </div>
+    
+    <div class="text-content">
+      <h1 class="title-vertical" id="main-title">残鳍·渡澜</h1>
+      <p class="desc-vertical" id="sub-title">BROKEN FIN · CROSSING WAVES</p>
+    </div>
+
+    <div class="footer">
+      <div class="hint" id="prev-btn">[ 溯流 / PREV ]</div>
+      <div class="hint" style="color: #eab308;">长按影像 唤醒涟漪</div>
+      <div class="hint" id="next-btn">[ 顺流 / NEXT ]</div>
+    </div>
+  </div>
+
+  <div id="canvas-container"></div>
+
+  <script type="module">
+    import * as THREE from 'three';
+    import { gsap } from 'https://unpkg.com/gsap@3.12.5/index.js'; // 引入 GSAP 用于丝滑动画
+
+    // ==========================================
+    // 1. 配置数据 (请在此处替换你的真实图片路径)
+    // ==========================================
+    const ASSETS = [
+      { url: '残鳍・渡澜（耳饰）(1).jpg', title: '残鳍·渡澜', sub: 'BROKEN FIN · CROSSING WAVES' },
+      { url: '蚀礁・生芒（手饰）(1).jpg', title: '蚀礁·生芒', sub: 'ERODED REEF · GLIMMER OF LIFE' },
+      { url: '浊触・凝愈（面饰）.jpg', title: '浊触·凝愈', sub: 'BOUND SHELL · TIDE RETURN' }
+    ];
+
+    let currentIndex = 0;
+    const planes = [];
+
+    // ==========================================
+    // 2. 核心着色器 GLSL (水波扭曲特效)
+    // ==========================================
+    const vertexShader = `
+      varying vec2 vUv;
+      void main() {
+        vUv = uv;
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+      }
+    `;
+
+    const fragmentShader = `
+      uniform sampler2D uTexture;
+      uniform float uTime;
+      uniform vec2 uMouse;
+      uniform float uHoverState;
+      varying vec2 vUv;
+
+      void main() {
+        vec2 uv = vUv;
+        
+        // 计算鼠标到当前像素的距离
+        float dist = distance(uv, uMouse);
+        
+        // 核心水波扭曲算法
+        float ripple = sin(dist * 20.0 - uTime * 5.0) * 0.02 * uHoverState;
+        ripple *= exp(-dist * 10.0); // 衰减边缘
+        
+        uv.x += ripple;
+        uv.y += ripple;
+
+        // 细微的持续深海漂浮感
+        uv.y += sin(uTime * 0.5 + uv.x * 2.0) * 0.005;
+
+        vec4 texColor = texture2D(uTexture, uv);
+        gl_FragColor = vec4(texColor.rgb, 1.0);
+      }
+    `;
+
+    // ==========================================
+    // 3. WebGL 场景初始化
+    // ==========================================
+    const container = document.getElementById('canvas-container');
+    const scene = new THREE.Scene();
+    scene.fog = new THREE.FogExp2(0x040914, 0.05);
+
+    const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 100);
+    camera.position.z = 4;
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    container.appendChild(renderer.domElement);
+
+    // ==========================================
+    // 4. 构建图像平面与材质
+    // ==========================================
+    const textureLoader = new THREE.TextureLoader();
+    const geometry = new THREE.PlaneGeometry(3, 4, 32, 32); // 图片比例
+
+    ASSETS.forEach((data, index) => {
+      // 临时使用纯色材质替代，直到加载完成
+      const material = new THREE.ShaderMaterial({
+        vertexShader,
+        fragmentShader,
+        uniforms: {
+          uTexture: { value: null },
+          uTime: { value: 0 },
+          uMouse: { value: new THREE.Vector2(0.5, 0.5) },
+          uHoverState: { value: 0.0 }
+        },
+        transparent: true
+      });
+
+      // 异步加载纹理
+      textureLoader.load(data.url, (tex) => {
+        material.uniforms.uTexture.value = tex;
+      });
+
+      const plane = new THREE.Mesh(geometry, material);
+      // 排列在 X 轴上
+      plane.position.x = index * 5; 
+      scene.add(plane);
+      planes.push(plane);
+    });
+
+    // ==========================================
+    // 5. 3D 环境粒子 (响应手势扩散)
+    // ==========================================
+    const particleCount = 1500;
+    const particlesGeo = new THREE.BufferGeometry();
+    const posArray = new Float32Array(particleCount * 3);
+    for(let i = 0; i < particleCount * 3; i++) {
+      posArray[i] = (Math.random() - 0.5) * 15;
+    }
+    particlesGeo.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
+    const particleMat = new THREE.PointsMaterial({
+      size: 0.015, color: 0xeab308, transparent: true, opacity: 0.4, blending: THREE.AdditiveBlending
+    });
+    const particlesMesh = new THREE.Points(particlesGeo, particleMat);
+    scene.add(particlesMesh);
+
+    // ==========================================
+    // 6. 交互与动画控制
+    // ==========================================
+    const clock = new THREE.Clock();
+    const mouse = new THREE.Vector2();
+    const targetMouse = new THREE.Vector2();
+    const raycaster = new THREE.Raycaster();
+
+    // 监听手指/鼠标滑动以控制着色器扭曲与粒子扩散
+    function onPointerMove(e) {
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      
+      mouse.x = (clientX / window.innerWidth) * 2 - 1;
+      mouse.y = -(clientY / window.innerHeight) * 2 + 1;
+
+      // 射线检测当前平面，计算局部 UV 坐标传给 Shader
+      raycaster.setFromCamera(mouse, camera);
+      const intersects = raycaster.intersectObject(planes[currentIndex]);
+      
+      if (intersects.length > 0) {
+        gsap.to(planes[currentIndex].material.uniforms.uHoverState, { value: 1.0, duration: 0.5 });
+        gsap.to(planes[currentIndex].material.uniforms.uMouse.value, {
+          x: intersects[0].uv.x,
+          y: intersects[0].uv.y,
+          duration: 0.1
+        });
+      } else {
+        gsap.to(planes[currentIndex].material.uniforms.uHoverState, { value: 0.0, duration: 1.0 });
+      }
+
+      // 鼠标影响环境粒子旋转
+      targetMouse.x = mouse.x * 0.1;
+      targetMouse.y = mouse.y * 0.1;
+    }
+    
+    window.addEventListener('mousemove', onPointerMove);
+    window.addEventListener('touchmove', onPointerMove);
+
+    function animate() {
+      requestAnimationFrame(animate);
+      const elapsedTime = clock.getElapsedTime();
+
+      // 更新当前画面的 Shader 时间
+      if(planes[currentIndex]) {
+        planes[currentIndex].material.uniforms.uTime.value = elapsedTime;
+        // 让图片在深海中产生细微的呼吸浮动
+        planes[currentIndex].position.y = Math.sin(elapsedTime * 1.2) * 0.05;
+      }
+
+      // 粒子系统缓动扩散
+      particlesMesh.rotation.y += 0.001;
+      particlesMesh.rotation.x += (targetMouse.y - particlesMesh.rotation.x) * 0.05;
+      particlesMesh.rotation.y += (targetMouse.x - particlesMesh.rotation.y) * 0.05;
+
+      renderer.render(scene, camera);
+    }
+    animate();
+
+    // ==========================================
+    // 7. UI 逻辑与平滑切换 (GSAP 驱动)
+    // ==========================================
+    const titleEl = document.getElementById('main-title');
+    const subTitleEl = document.getElementById('sub-title');
+    const dotsContainer = document.getElementById('dots-container');
+
+    // 初始化导航点
+    ASSETS.forEach((_, i) => {
+      const dot = document.createElement('div');
+      dot.className = `dot ${i === 0 ? 'active' : ''}`;
+      dotsContainer.appendChild(dot);
+    });
+
+    function goToSlide(index) {
+      if (index < 0 || index >= ASSETS.length) return;
+      currentIndex = index;
+
+      // 移动摄像机视角 (制造深海穿梭感)
+      gsap.to(camera.position, {
+        x: currentIndex * 5,
+        duration: 1.5,
+        ease: "power3.inOut"
+      });
+
+      // 更新 UI 文案及导航点
+      titleEl.innerText = ASSETS[currentIndex].title;
+      subTitleEl.innerText = ASSETS[currentIndex].sub;
+      
+      document.querySelectorAll('.dot').forEach((dot, i) => {
+        dot.className = `dot ${i === currentIndex ? 'active' : ''}`;
+      });
+    }
+
+    document.getElementById('prev-btn').addEventListener('click', () => goToSlide(currentIndex - 1));
+    document.getElementById('next-btn').addEventListener('click', () => goToSlide(currentIndex + 1));
+
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+  </script>
+</body>
+</html>

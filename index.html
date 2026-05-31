@@ -1,0 +1,1326 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>残响·海殇 | 海洋首饰系列</title>
+<style>
+  :root {
+    --deep: #04080f;
+    --navy: #060d1a;
+    --ocean: #0a1628;
+    --mid: #0e2140;
+    --silver: #b8c8d8;
+    --pearl: #e8f0f7;
+    --iridescent: #7ec8e3;
+    --gold: #c9a96e;
+    --coral: #e8765a;
+    --teal: #2a9d8f;
+    --font-zh: 'Noto Serif SC', 'Source Han Serif CN', STSong, SimSun, serif;
+    --font-en: 'Cormorant Garamond', 'Playfair Display', Georgia, serif;
+    --font-body: 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--deep);
+    color: var(--pearl);
+    font-family: var(--font-body);
+    overflow-x: hidden;
+    cursor: none;
+  }
+
+  /* ── Custom Cursor ── */
+  #cursor {
+    position: fixed;
+    width: 8px; height: 8px;
+    background: var(--iridescent);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 9999;
+    transform: translate(-50%, -50%);
+    transition: width .2s, height .2s, background .2s;
+    mix-blend-mode: screen;
+  }
+  #cursor-ring {
+    position: fixed;
+    width: 36px; height: 36px;
+    border: 1px solid rgba(126,200,227,.4);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 9998;
+    transform: translate(-50%, -50%);
+    transition: transform .12s cubic-bezier(.25,.46,.45,.94), width .3s, height .3s, border-color .3s;
+  }
+  body:has(a:hover) #cursor, body:has(button:hover) #cursor,
+  body:has(.card:hover) #cursor { width: 16px; height: 16px; background: var(--gold); }
+  body:has(a:hover) #cursor-ring, body:has(button:hover) #cursor-ring,
+  body:has(.card:hover) #cursor-ring { width: 60px; height: 60px; border-color: rgba(201,169,110,.5); }
+
+  /* ── Loading Screen ── */
+  #loader {
+    position: fixed; inset: 0;
+    background: var(--deep);
+    z-index: 10000;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 1s ease, visibility 1s ease;
+  }
+  #loader.hidden { opacity: 0; visibility: hidden; }
+  .loader-text {
+    font-family: var(--font-zh);
+    font-size: clamp(1.8rem, 4vw, 3rem);
+    letter-spacing: .6em;
+    color: var(--silver);
+    margin-bottom: 2rem;
+    animation: pulse 2s ease-in-out infinite;
+  }
+  .loader-bar {
+    width: 200px; height: 1px;
+    background: rgba(184,200,216,.15);
+    position: relative;
+    overflow: hidden;
+  }
+  .loader-bar::after {
+    content: '';
+    position: absolute;
+    left: -100%; top: 0;
+    width: 100%; height: 100%;
+    background: linear-gradient(90deg, transparent, var(--iridescent), transparent);
+    animation: scan 1.8s ease-in-out infinite;
+  }
+  @keyframes scan { to { left: 100%; } }
+  @keyframes pulse { 0%,100%{opacity:.4} 50%{opacity:1} }
+
+  /* ── Navigation ── */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 1000;
+    padding: 1.8rem 4rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: background .4s, padding .4s;
+  }
+  nav.scrolled {
+    background: rgba(4,8,15,.88);
+    backdrop-filter: blur(20px);
+    padding: 1.2rem 4rem;
+    border-bottom: 1px solid rgba(126,200,227,.08);
+  }
+  .nav-brand {
+    font-family: var(--font-zh);
+    font-size: 1.1rem;
+    letter-spacing: .3em;
+    color: var(--pearl);
+    text-decoration: none;
+  }
+  .nav-links { display: flex; gap: 3rem; list-style: none; }
+  .nav-links a {
+    font-size: .75rem;
+    letter-spacing: .18em;
+    color: var(--silver);
+    text-decoration: none;
+    text-transform: uppercase;
+    position: relative;
+    transition: color .3s;
+  }
+  .nav-links a::after {
+    content: '';
+    position: absolute;
+    bottom: -4px; left: 0;
+    width: 0; height: 1px;
+    background: var(--iridescent);
+    transition: width .3s ease;
+  }
+  .nav-links a:hover { color: var(--pearl); }
+  .nav-links a:hover::after { width: 100%; }
+
+  /* ── Hero ── */
+  #hero {
+    height: 100vh;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  #hero-video {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    object-fit: cover;
+    opacity: .55;
+    filter: saturate(1.1) brightness(.8);
+  }
+  .hero-overlay {
+    position: absolute; inset: 0;
+    background: linear-gradient(
+      to bottom,
+      rgba(4,8,15,.3) 0%,
+      rgba(4,8,15,.1) 40%,
+      rgba(4,8,15,.7) 80%,
+      var(--deep) 100%
+    );
+  }
+  .hero-content {
+    position: relative;
+    text-align: center;
+    z-index: 2;
+  }
+  .hero-sub {
+    font-size: .7rem;
+    letter-spacing: .5em;
+    color: var(--iridescent);
+    text-transform: uppercase;
+    margin-bottom: 1.5rem;
+    opacity: 0;
+    animation: fadeUp .8s .4s ease forwards;
+  }
+  .hero-title {
+    font-family: var(--font-zh);
+    font-size: clamp(3.5rem, 9vw, 8rem);
+    font-weight: 300;
+    letter-spacing: .12em;
+    line-height: 1.1;
+    background: linear-gradient(135deg, #e8f0f7 0%, #7ec8e3 35%, #b8c8d8 65%, #c9a96e 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    opacity: 0;
+    animation: fadeUp .9s .7s ease forwards;
+  }
+  .hero-title-en {
+    font-family: var(--font-en);
+    font-size: clamp(1rem, 2.5vw, 1.6rem);
+    font-weight: 300;
+    letter-spacing: .35em;
+    color: rgba(184,200,216,.65);
+    margin-top: 1rem;
+    opacity: 0;
+    animation: fadeUp .8s 1s ease forwards;
+  }
+  .hero-desc {
+    max-width: 480px;
+    margin: 2.5rem auto 0;
+    font-size: .85rem;
+    line-height: 2;
+    letter-spacing: .06em;
+    color: rgba(184,200,216,.7);
+    opacity: 0;
+    animation: fadeUp .8s 1.3s ease forwards;
+  }
+  .scroll-hint {
+    position: absolute;
+    bottom: 2.5rem; left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: .7rem;
+    opacity: 0;
+    animation: fadeUp .8s 2s ease forwards;
+  }
+  .scroll-hint span {
+    font-size: .6rem;
+    letter-spacing: .4em;
+    color: rgba(126,200,227,.5);
+    text-transform: uppercase;
+  }
+  .scroll-line {
+    width: 1px; height: 50px;
+    background: linear-gradient(to bottom, var(--iridescent), transparent);
+    animation: scrollPulse 2s ease-in-out infinite;
+  }
+  @keyframes scrollPulse {
+    0%,100%{opacity:.2;transform:scaleY(1)} 50%{opacity:.8;transform:scaleY(1.3)}
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── Section Shared ── */
+  section { position: relative; }
+
+  .section-label {
+    font-size: .6rem;
+    letter-spacing: .5em;
+    color: var(--iridescent);
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.2rem;
+  }
+  .section-label::before {
+    content: '';
+    display: block;
+    width: 40px; height: 1px;
+    background: var(--iridescent);
+  }
+
+  /* ── Intro ── */
+  #intro {
+    padding: 10rem 4rem;
+    max-width: 1200px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8rem;
+    align-items: center;
+  }
+  .intro-left .big-number {
+    font-family: var(--font-en);
+    font-size: clamp(6rem, 12vw, 11rem);
+    color: rgba(126,200,227,.06);
+    line-height: 1;
+    position: absolute;
+    top: -2rem; left: -2rem;
+    pointer-events: none;
+  }
+  .intro-left { position: relative; }
+  .intro-title {
+    font-family: var(--font-zh);
+    font-size: clamp(1.8rem, 3.5vw, 2.8rem);
+    font-weight: 300;
+    line-height: 1.6;
+    letter-spacing: .08em;
+    margin-bottom: 2rem;
+  }
+  .intro-title em {
+    font-style: normal;
+    color: var(--iridescent);
+  }
+  .intro-body {
+    font-size: .88rem;
+    line-height: 2.2;
+    color: rgba(184,200,216,.75);
+    letter-spacing: .04em;
+  }
+  .intro-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 3rem;
+  }
+  .stat-item {
+    border-left: 1px solid rgba(126,200,227,.2);
+    padding-left: 2rem;
+  }
+  .stat-num {
+    font-family: var(--font-en);
+    font-size: 3.5rem;
+    font-weight: 300;
+    color: var(--pearl);
+    line-height: 1;
+  }
+  .stat-unit {
+    font-size: .7rem;
+    color: var(--iridescent);
+    letter-spacing: .2em;
+    margin-left: .3rem;
+  }
+  .stat-desc {
+    font-size: .78rem;
+    color: rgba(184,200,216,.6);
+    margin-top: .5rem;
+    letter-spacing: .04em;
+    line-height: 1.7;
+  }
+
+  /* ── Collection ── */
+  #collection {
+    padding: 6rem 0;
+  }
+  .collection-header {
+    text-align: center;
+    padding: 0 4rem 6rem;
+  }
+  .collection-title {
+    font-family: var(--font-zh);
+    font-size: clamp(2rem, 4vw, 3.2rem);
+    font-weight: 300;
+    letter-spacing: .15em;
+    margin-bottom: 1rem;
+  }
+  .collection-title-en {
+    font-family: var(--font-en);
+    font-size: 1rem;
+    letter-spacing: .4em;
+    color: rgba(184,200,216,.5);
+  }
+
+  /* ── Product Items ── */
+  .product-section {
+    min-height: 100vh;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    position: relative;
+    overflow: hidden;
+  }
+  .product-section:nth-child(even) { direction: rtl; }
+  .product-section:nth-child(even) > * { direction: ltr; }
+
+  .product-visual {
+    position: relative;
+    overflow: hidden;
+    background: var(--navy);
+    min-height: 80vh;
+  }
+  .product-visual::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at center, rgba(126,200,227,.04), transparent 70%);
+    z-index: 1;
+    pointer-events: none;
+  }
+  .product-img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    transition: transform .8s cubic-bezier(.25,.46,.45,.94), opacity .4s;
+    display: block;
+  }
+  .product-video {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    object-fit: cover;
+    opacity: 0;
+    transition: opacity .5s ease;
+    display: block;
+  }
+  .product-visual.playing .product-img { opacity: 0; }
+  .product-visual.playing .product-video { opacity: 1; }
+  .product-visual:hover .product-img { transform: scale(1.03); }
+
+  .video-toggle {
+    position: absolute;
+    bottom: 2rem; right: 2rem;
+    z-index: 10;
+    width: 56px; height: 56px;
+    border-radius: 50%;
+    background: rgba(4,8,15,.7);
+    border: 1px solid rgba(126,200,227,.3);
+    backdrop-filter: blur(12px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: none;
+    transition: all .3s ease;
+  }
+  .video-toggle:hover {
+    background: rgba(126,200,227,.15);
+    border-color: var(--iridescent);
+    transform: scale(1.1);
+  }
+  .video-toggle svg { width: 20px; height: 20px; fill: var(--pearl); }
+  .video-toggle .icon-pause { display: none; }
+  .product-visual.playing .video-toggle .icon-play { display: none; }
+  .product-visual.playing .video-toggle .icon-pause { display: block; }
+
+  .video-label {
+    position: absolute;
+    bottom: 2rem; left: 2rem;
+    font-size: .6rem;
+    letter-spacing: .3em;
+    color: rgba(126,200,227,.6);
+    text-transform: uppercase;
+    z-index: 10;
+    transition: opacity .3s;
+  }
+  .product-visual.playing .video-label { opacity: 0; }
+
+  .product-info {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 5rem 6rem;
+    background: var(--ocean);
+    position: relative;
+    overflow: hidden;
+  }
+  .product-info::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 80% 50%, rgba(126,200,227,.03), transparent 60%);
+    pointer-events: none;
+  }
+  .product-index {
+    font-family: var(--font-en);
+    font-size: 6rem;
+    font-weight: 300;
+    color: rgba(126,200,227,.05);
+    position: absolute;
+    top: 2rem; right: 3rem;
+    line-height: 1;
+    pointer-events: none;
+  }
+
+  .product-name-zh {
+    font-family: var(--font-zh);
+    font-size: clamp(1.8rem, 3vw, 2.6rem);
+    font-weight: 300;
+    letter-spacing: .12em;
+    line-height: 1.3;
+    margin-bottom: .6rem;
+  }
+  .product-name-zh .dot { color: var(--iridescent); margin: 0 .1em; }
+  .product-name-en {
+    font-family: var(--font-en);
+    font-size: .95rem;
+    letter-spacing: .3em;
+    color: rgba(184,200,216,.5);
+    margin-bottom: 1rem;
+  }
+  .product-category {
+    display: inline-block;
+    font-size: .6rem;
+    letter-spacing: .3em;
+    color: var(--iridescent);
+    border: 1px solid rgba(126,200,227,.25);
+    padding: .35rem .9rem;
+    text-transform: uppercase;
+    margin-bottom: 2.5rem;
+  }
+  .product-divider {
+    width: 40px; height: 1px;
+    background: linear-gradient(to right, var(--iridescent), transparent);
+    margin-bottom: 2rem;
+  }
+  .product-desc {
+    font-size: .88rem;
+    line-height: 2.2;
+    color: rgba(184,200,216,.75);
+    letter-spacing: .04em;
+    margin-bottom: 2.5rem;
+  }
+  .product-concept {
+    font-family: var(--font-zh);
+    font-size: .8rem;
+    color: rgba(126,200,227,.7);
+    line-height: 1.9;
+    padding-left: 1.2rem;
+    border-left: 1px solid rgba(126,200,227,.25);
+    margin-bottom: 2.5rem;
+    font-style: italic;
+  }
+  .product-materials {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .5rem;
+    margin-bottom: 2rem;
+  }
+  .material-tag {
+    font-size: .62rem;
+    letter-spacing: .15em;
+    color: rgba(184,200,216,.6);
+    background: rgba(126,200,227,.06);
+    border: 1px solid rgba(126,200,227,.12);
+    padding: .3rem .8rem;
+    text-transform: uppercase;
+  }
+  .product-theme {
+    font-size: .75rem;
+    color: rgba(232,118,90,.7);
+    letter-spacing: .08em;
+    line-height: 1.8;
+    display: flex;
+    align-items: flex-start;
+    gap: .8rem;
+  }
+  .product-theme::before {
+    content: '⚠';
+    font-size: .7rem;
+    flex-shrink: 0;
+    margin-top: .1em;
+  }
+
+  /* ── Reveal animations ── */
+  .reveal {
+    opacity: 0;
+    transform: translateY(40px);
+    transition: opacity .9s ease, transform .9s ease;
+  }
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  .reveal-left {
+    opacity: 0;
+    transform: translateX(-40px);
+    transition: opacity .9s ease, transform .9s ease;
+  }
+  .reveal-left.visible { opacity: 1; transform: translateX(0); }
+  .reveal-right {
+    opacity: 0;
+    transform: translateX(40px);
+    transition: opacity .9s ease, transform .9s ease;
+  }
+  .reveal-right.visible { opacity: 1; transform: translateX(0); }
+  .reveal-delay-1 { transition-delay: .1s; }
+  .reveal-delay-2 { transition-delay: .2s; }
+  .reveal-delay-3 { transition-delay: .3s; }
+  .reveal-delay-4 { transition-delay: .45s; }
+  .reveal-delay-5 { transition-delay: .6s; }
+
+  /* ── Poster Band ── */
+  #poster-band {
+    position: relative;
+    height: 70vh;
+    overflow: hidden;
+  }
+  #poster-video {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    filter: saturate(1.05) brightness(.65);
+  }
+  .poster-overlay {
+    position: absolute; inset: 0;
+    background: linear-gradient(to bottom, var(--deep) 0%, transparent 20%, transparent 80%, var(--deep) 100%);
+  }
+  .poster-text {
+    position: absolute; inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+  }
+  .poster-quote {
+    font-family: var(--font-zh);
+    font-size: clamp(1.3rem, 3vw, 2.2rem);
+    font-weight: 300;
+    letter-spacing: .2em;
+    line-height: 2;
+    color: var(--pearl);
+    max-width: 800px;
+    padding: 0 2rem;
+  }
+  .poster-quote-en {
+    font-family: var(--font-en);
+    font-size: clamp(.8rem, 1.5vw, 1.1rem);
+    letter-spacing: .3em;
+    color: rgba(184,200,216,.6);
+    margin-top: 1.5rem;
+  }
+
+  /* ── Gallery Grid ── */
+  #gallery {
+    padding: 8rem 4rem;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+  .gallery-header {
+    text-align: center;
+    margin-bottom: 5rem;
+  }
+  .gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: auto;
+    gap: 2px;
+  }
+  .gallery-cell {
+    position: relative;
+    overflow: hidden;
+    aspect-ratio: 1;
+    cursor: none;
+  }
+  .gallery-cell:first-child {
+    grid-column: span 2;
+    grid-row: span 2;
+    aspect-ratio: auto;
+  }
+  .gallery-cell img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    transition: transform .7s ease, filter .5s ease;
+    filter: saturate(.85);
+    display: block;
+  }
+  .gallery-cell:hover img {
+    transform: scale(1.05);
+    filter: saturate(1.1);
+  }
+  .gallery-cell-label {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    padding: 2rem 1.5rem 1.5rem;
+    background: linear-gradient(to top, rgba(4,8,15,.8), transparent);
+    opacity: 0;
+    transition: opacity .4s;
+    pointer-events: none;
+  }
+  .gallery-cell:hover .gallery-cell-label { opacity: 1; }
+  .gallery-cell-label h4 {
+    font-family: var(--font-zh);
+    font-size: .95rem;
+    letter-spacing: .15em;
+    color: var(--pearl);
+  }
+  .gallery-cell-label p {
+    font-size: .65rem;
+    letter-spacing: .25em;
+    color: var(--iridescent);
+    margin-top: .3rem;
+  }
+
+  /* ── Lightbox ── */
+  #lightbox {
+    position: fixed; inset: 0;
+    z-index: 5000;
+    background: rgba(4,8,15,.95);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity .4s, visibility .4s;
+    backdrop-filter: blur(20px);
+  }
+  #lightbox.active { opacity: 1; visibility: visible; }
+  #lightbox img {
+    max-width: 90vw;
+    max-height: 90vh;
+    object-fit: contain;
+    border: 1px solid rgba(126,200,227,.1);
+  }
+  .lightbox-close {
+    position: absolute;
+    top: 2rem; right: 2rem;
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    background: rgba(126,200,227,.1);
+    border: 1px solid rgba(126,200,227,.2);
+    cursor: none;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--pearl);
+    font-size: 1.2rem;
+    transition: all .3s;
+  }
+  .lightbox-close:hover { background: rgba(126,200,227,.25); }
+  .lightbox-caption {
+    position: absolute;
+    bottom: 3rem; left: 50%;
+    transform: translateX(-50%);
+    text-align: center;
+  }
+  .lightbox-caption h4 {
+    font-family: var(--font-zh);
+    font-size: 1.1rem;
+    letter-spacing: .2em;
+  }
+  .lightbox-caption p {
+    font-size: .7rem;
+    letter-spacing: .3em;
+    color: rgba(126,200,227,.6);
+    margin-top: .3rem;
+  }
+
+  /* ── Footer ── */
+  footer {
+    padding: 8rem 4rem 5rem;
+    border-top: 1px solid rgba(126,200,227,.08);
+    position: relative;
+    overflow: hidden;
+  }
+  footer::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 50%; right: 0;
+    height: 300px;
+    background: radial-gradient(ellipse at 50% 0%, rgba(126,200,227,.04), transparent 70%);
+    pointer-events: none;
+  }
+  .footer-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 6rem;
+    align-items: start;
+  }
+  .footer-brand {
+    font-family: var(--font-zh);
+    font-size: 1.8rem;
+    font-weight: 300;
+    letter-spacing: .25em;
+    line-height: 1.5;
+    margin-bottom: 1rem;
+  }
+  .footer-tagline {
+    font-size: .75rem;
+    color: rgba(184,200,216,.45);
+    letter-spacing: .15em;
+    line-height: 2;
+  }
+  .footer-manifesto {
+    font-family: var(--font-zh);
+    font-size: .9rem;
+    line-height: 2.5;
+    color: rgba(184,200,216,.6);
+    letter-spacing: .06em;
+  }
+  .footer-manifesto strong {
+    color: var(--iridescent);
+    font-weight: 400;
+  }
+  .footer-bottom {
+    max-width: 1200px;
+    margin: 4rem auto 0;
+    padding-top: 2rem;
+    border-top: 1px solid rgba(126,200,227,.06);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: .65rem;
+    letter-spacing: .15em;
+    color: rgba(184,200,216,.3);
+    text-transform: uppercase;
+  }
+
+  /* ── Canvas Particles ── */
+  #particles {
+    position: fixed; inset: 0;
+    pointer-events: none;
+    z-index: 1;
+    opacity: .4;
+  }
+
+  /* ── Horizontal scroll teaser for intro ── */
+  .line-separator {
+    width: 100%;
+    height: 1px;
+    background: linear-gradient(to right, transparent, rgba(126,200,227,.2), transparent);
+    margin: 0;
+  }
+
+  /* ── Responsive ── */
+  @media (max-width: 1024px) {
+    #intro { grid-template-columns: 1fr; gap: 4rem; padding: 7rem 2.5rem; }
+    .product-section { grid-template-columns: 1fr; min-height: auto; }
+    .product-section:nth-child(even) { direction: ltr; }
+    .product-visual { min-height: 60vw; }
+    .product-info { padding: 3.5rem 2.5rem; }
+    nav { padding: 1.5rem 2rem; }
+    nav.scrolled { padding: 1rem 2rem; }
+    .nav-links { gap: 1.5rem; }
+    .gallery-grid { grid-template-columns: 1fr 1fr; }
+    .gallery-cell:first-child { grid-column: span 2; }
+    footer { padding: 5rem 2.5rem 3rem; }
+    .footer-inner { grid-template-columns: 1fr; gap: 3rem; }
+    #gallery { padding: 5rem 2rem; }
+  }
+  @media (max-width: 640px) {
+    .nav-links { display: none; }
+    .gallery-grid { grid-template-columns: 1fr; }
+    .gallery-cell:first-child { grid-column: span 1; }
+    .product-info { padding: 2.5rem 1.5rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Cursor -->
+<div id="cursor"></div>
+<div id="cursor-ring"></div>
+
+<!-- Loader -->
+<div id="loader">
+  <div class="loader-text">残响·海殇</div>
+  <div class="loader-bar"></div>
+</div>
+
+<!-- Particles Canvas -->
+<canvas id="particles"></canvas>
+
+<!-- Navigation -->
+<nav id="nav">
+  <a href="#" class="nav-brand">残响·海殇</a>
+  <ul class="nav-links">
+    <li><a href="#intro">理念</a></li>
+    <li><a href="#collection">系列</a></li>
+    <li><a href="#gallery">图集</a></li>
+  </ul>
+</nav>
+
+<!-- Hero -->
+<section id="hero">
+  <video id="hero-video" autoplay muted loop playsinline>
+    <source src="动态海报1(1).mp4" type="video/mp4">
+  </video>
+  <div class="hero-overlay"></div>
+  <div class="hero-content">
+    <p class="hero-sub">Ocean Elegy · Jewelry Collection</p>
+    <h1 class="hero-title">残响·海殇</h1>
+    <p class="hero-title-en">Lingering Echo · Ocean's Grief</p>
+    <p class="hero-desc">每一件首饰，都是一封写给大海的信<br>关于美丽，关于伤痛，关于那些我们欠下的债</p>
+  </div>
+  <div class="scroll-hint">
+    <span>Scroll</span>
+    <div class="scroll-line"></div>
+  </div>
+</section>
+
+<!-- Intro -->
+<section id="intro">
+  <div class="intro-left reveal-left">
+    <div class="big-number">01</div>
+    <div class="section-label">Our Manifesto</div>
+    <h2 class="intro-title">
+      当<em>废弃渔网</em>成为项链<br>
+      当<em>微塑料</em>化作宝石<br>
+      美丽与罪责同在
+    </h2>
+    <p class="intro-body">
+      这个系列以海洋污染为镜，用精工首饰的语言，讲述那些被我们遗忘在深海的故事。每一件作品取材自真实的环境困境——渔网缠绕、微塑料侵蚀、珊瑚白化——将生态危机转化为可以佩戴的诗句。
+    </p>
+  </div>
+  <div class="intro-stats reveal-right">
+    <div class="stat-item">
+      <div class="stat-num">640<span class="stat-unit">万吨</span></div>
+      <div class="stat-desc">每年流入海洋的塑料垃圾总量，相当于每分钟一辆垃圾车</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num">100<span class="stat-unit">万</span></div>
+      <div class="stat-desc">每年因废弃渔具死亡的海鸟与海洋哺乳动物数量</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num">2050</div>
+      <div class="stat-desc">预测年份——届时海洋中的塑料重量将超过鱼类总重量</div>
+    </div>
+  </div>
+</section>
+
+<div class="line-separator"></div>
+
+<!-- Collection Header -->
+<div class="collection-header reveal">
+  <div class="section-label" style="justify-content:center;margin-bottom:.8rem">
+    <span>The Collection</span>
+  </div>
+  <h2 class="collection-title">五件作品，五场对话</h2>
+  <p class="collection-title-en">Five Pieces · Five Conversations with the Sea</p>
+</div>
+
+<!-- ── Product 1: 残鳍·渡澜 耳饰 ── -->
+<div class="product-section" id="product-1">
+  <div class="product-visual reveal-left" id="vis-1">
+    <img class="product-img" src="残鳍・渡澜（耳饰）(1).png" alt="残鳍·渡澜 耳饰">
+    <video class="product-video" id="vid-1" loop muted playsinline>
+      <source src="残鳍・渡澜（耳饰）虚拟展示(1).mp4" type="video/mp4">
+    </video>
+    <span class="video-label">点击查看虚拟佩戴</span>
+    <button class="video-toggle" onclick="toggleVideo('vis-1','vid-1')">
+      <svg class="icon-play" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+      <svg class="icon-pause" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+    </button>
+  </div>
+  <div class="product-info reveal-right">
+    <div class="product-index">01</div>
+    <div class="section-label">Earrings</div>
+    <h2 class="product-name-zh">残鳍<span class="dot">·</span>渡澜</h2>
+    <p class="product-name-en">Broken Fin · Crossing Waves</p>
+    <span class="product-category">耳饰 · Earring</span>
+    <div class="product-divider"></div>
+    <p class="product-desc">
+      一只蚌壳裂开，内里是蓝色砾石与微塑料的沉积——那是海洋的伤口；一只海豚被渔网缠缚，尾鳍呈现彩虹氧化色，挣扎中折射出光芒。两耳不对称，如同失衡的生态。
+    </p>
+    <p class="product-concept">
+      "它仍在游，即使鳍已残断<br>
+      穿越污染的海浪，奔向那片未曾被触碰的蓝"
+    </p>
+    <div class="product-materials">
+      <span class="material-tag">925 银</span>
+      <span class="material-tag">贝壳</span>
+      <span class="material-tag">钛合金</span>
+      <span class="material-tag">锆石</span>
+      <span class="material-tag">渔网元素</span>
+    </div>
+    <p class="product-theme">每年约有 64 万吨废弃渔具沉入海底，缠绕无数鲸豚类动物。这对耳饰是它们的挽歌，也是一份控诉。</p>
+  </div>
+</div>
+
+<!-- ── Product 2: 锢甲·归潮 项链 ── -->
+<div class="product-section" id="product-2">
+  <div class="product-visual reveal-right" id="vis-2">
+    <img class="product-img" src="锢甲・归潮（项链）.png" alt="锢甲·归潮 项链">
+    <video class="product-video" id="vid-2" loop muted playsinline>
+      <source src="锢甲・归潮（项链）虚拟展示.mp4" type="video/mp4">
+    </video>
+    <span class="video-label">点击查看虚拟佩戴</span>
+    <button class="video-toggle" onclick="toggleVideo('vis-2','vid-2')">
+      <svg class="icon-play" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+      <svg class="icon-pause" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+    </button>
+  </div>
+  <div class="product-info reveal-left">
+    <div class="product-index">02</div>
+    <div class="section-label">Necklace</div>
+    <h2 class="product-name-zh">锢甲<span class="dot">·</span>归潮</h2>
+    <p class="product-name-en">Bound Shell · Tide Return</p>
+    <span class="product-category">项链 · Necklace</span>
+    <div class="product-divider"></div>
+    <p class="product-desc">
+      银质珊瑚枝干撑起一张渔网，锈蚀的鱼钩悬于其上；中央，一只海龟被麻绳紧缚，甲壳上的纹路与束缚的痕迹融为一体。贝壳链坠诉说着曾经的自由。
+    </p>
+    <p class="product-concept">
+      "归潮时，它带回了一副不属于自己的铠甲<br>
+      那是人类留在海里的印记"
+    </p>
+    <div class="product-materials">
+      <span class="material-tag">925 银</span>
+      <span class="material-tag">氧化铜</span>
+      <span class="material-tag">麻绳</span>
+      <span class="material-tag">天然贝壳</span>
+      <span class="material-tag">仿珊瑚材质</span>
+    </div>
+    <p class="product-theme">全球超过半数的海龟体内检测出塑料碎片，废弃渔具每年致使数千只海龟受伤或死亡。</p>
+  </div>
+</div>
+
+<!-- ── Product 3: 裂颅·逐光 头饰 ── -->
+<div class="product-section" id="product-3">
+  <div class="product-visual reveal-left" id="vis-3">
+    <img class="product-img" src="裂颅・逐光（头饰）.png" alt="裂颅·逐光 头饰">
+    <video class="product-video" id="vid-3" loop muted playsinline>
+      <source src="裂颅・逐光（头饰）虚拟展示.mp4" type="video/mp4">
+    </video>
+    <span class="video-label">点击查看虚拟佩戴</span>
+    <button class="video-toggle" onclick="toggleVideo('vis-3','vid-3')">
+      <svg class="icon-play" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+      <svg class="icon-pause" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+    </button>
+  </div>
+  <div class="product-info reveal-right">
+    <div class="product-index">03</div>
+    <div class="section-label">Headpiece</div>
+    <h2 class="product-name-zh">裂颅<span class="dot">·</span>逐光</h2>
+    <p class="product-name-en">Cracked Skull · Chasing Light</p>
+    <span class="product-category">头饰 · Headpiece</span>
+    <div class="product-divider"></div>
+    <p class="product-desc">
+      鲸鱼颅骨与脊椎骨在渔网与浮木的缠绕下构成王冠。玻璃碎片如同星光，也如同污染的海面折射——死亡之中生长出美，废墟之上折射出光。
+    </p>
+    <p class="product-concept">
+      "鲸落，万物生<br>
+      它以死亡哺育深海，以颅骨追逐最后的光"
+    </p>
+    <div class="product-materials">
+      <span class="material-tag">925 银</span>
+      <span class="material-tag">仿骨陶瓷</span>
+      <span class="material-tag">渔网</span>
+      <span class="material-tag">海玻璃</span>
+      <span class="material-tag">天然珍珠</span>
+    </div>
+    <p class="product-theme">鲸落是深海最伟大的生命循环。然而每年超过 1000 头鲸豚因船只碰撞、渔具缠绕或噪音污染死亡。</p>
+  </div>
+</div>
+
+<!-- ── Product 4: 浊触·凝愈 面饰 ── -->
+<div class="product-section" id="product-4">
+  <div class="product-visual reveal-right" id="vis-4">
+    <img class="product-img" src="浊触・凝愈（面饰）.png" alt="浊触·凝愈 面饰">
+    <video class="product-video" id="vid-4" loop muted playsinline>
+      <source src="浊触・凝愈（面饰）虚拟展示(1).mp4" type="video/mp4">
+    </video>
+    <span class="video-label">点击查看虚拟佩戴</span>
+    <button class="video-toggle" onclick="toggleVideo('vis-4','vid-4')">
+      <svg class="icon-play" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+      <svg class="icon-pause" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+    </button>
+  </div>
+  <div class="product-info reveal-left">
+    <div class="product-index">04</div>
+    <div class="section-label">Face Piece</div>
+    <h2 class="product-name-zh">浊触<span class="dot">·</span>凝愈</h2>
+    <p class="product-name-en">Turbid Touch · Healing Still</p>
+    <span class="product-category">面饰 · Face Piece</span>
+    <div class="product-divider"></div>
+    <p class="product-desc">
+      章鱼触手盘旋而成面具，铁丝网与触须缠绕难分彼此。海玻璃镶嵌于眼眸位置——那是大海打磨后的碎片，锋利已被磨平，却仍带着伤痕的记忆。微型人形附于触手之侧，渺小而无感。
+    </p>
+    <p class="product-concept">
+      "当你凝视深海，深海也在浊触中<br>
+      试图凝愈那些，不曾被看见的伤"
+    </p>
+    <div class="product-materials">
+      <span class="material-tag">聚合物粘土</span>
+      <span class="material-tag">铁丝</span>
+      <span class="material-tag">海玻璃</span>
+      <span class="material-tag">925 银</span>
+      <span class="material-tag">天然贝壳</span>
+    </div>
+    <p class="product-theme">头足类动物对海洋酸化、温度变化和污染极为敏感，是衡量海洋生态健康的重要指示物种。</p>
+  </div>
+</div>
+
+<!-- ── Product 5: 蚀礁·生芒 手饰 ── -->
+<div class="product-section" id="product-5">
+  <div class="product-visual reveal-left" id="vis-5">
+    <img class="product-img" src="蚀礁・生芒（手饰）(1).png" alt="蚀礁·生芒 手饰">
+    <video class="product-video" id="vid-5" loop muted playsinline>
+      <source src="蚀礁・生芒（手饰）虚拟展示.mp4" type="video/mp4">
+    </video>
+    <span class="video-label">点击查看虚拟佩戴</span>
+    <button class="video-toggle" onclick="toggleVideo('vis-5','vid-5')">
+      <svg class="icon-play" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+      <svg class="icon-pause" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+    </button>
+  </div>
+  <div class="product-info reveal-right">
+    <div class="product-index">05</div>
+    <div class="section-label">Hand Jewelry</div>
+    <h2 class="product-name-zh">蚀礁<span class="dot">·</span>生芒</h2>
+    <p class="product-name-en">Reef Erosion · Emerging Light</p>
+    <span class="product-category">手饰 · Hand Piece</span>
+    <div class="product-divider"></div>
+    <p class="product-desc">
+      珊瑚的姿态被永久定格于银质之中——既是纪念，也是警示。手指间穿行的链条如同水流，如同渔线。被蚀刻的礁石纹路镌刻着温度上升的历史，而那一缕生芒，是不肯熄灭的希望。
+    </p>
+    <p class="product-concept">
+      "礁石在溶解，芒刺仍在<br>
+      哪怕只剩最后一株珊瑚，它也要开出光"
+    </p>
+    <div class="product-materials">
+      <span class="material-tag">925 银</span>
+      <span class="material-tag">铜镀金</span>
+      <span class="material-tag">仿珊瑚树脂</span>
+      <span class="material-tag">锆石</span>
+    </div>
+    <p class="product-theme">自 1950 年代以来，全球珊瑚礁已消失逾 50%。以当前速度，到本世纪末，全球 90% 的珊瑚礁将面临严重退化。</p>
+  </div>
+</div>
+
+<div class="line-separator"></div>
+
+<!-- Poster Band -->
+<div id="poster-band">
+  <video id="poster-video" autoplay muted loop playsinline>
+    <source src="动态海报2(1).mp4" type="video/mp4">
+  </video>
+  <div class="poster-overlay"></div>
+  <div class="poster-text reveal">
+    <p class="poster-quote">
+      "我们用污染制造美丽<br>
+      不是因为热爱黑暗<br>
+      而是希望有人在美丽中<br>
+      看见那片伤"
+    </p>
+    <p class="poster-quote-en">We craft beauty from pollution — not to celebrate darkness, but to make the wound visible.</p>
+  </div>
+</div>
+
+<!-- Gallery -->
+<section id="gallery">
+  <div class="gallery-header reveal">
+    <div class="section-label" style="justify-content:center;margin-bottom:.8rem">Gallery</div>
+    <h2 class="collection-title">作品全览</h2>
+    <p class="collection-title-en">The Complete Collection</p>
+  </div>
+  <div class="gallery-grid">
+    <div class="gallery-cell" onclick="openLightbox(this)">
+      <img src="耳饰(1).png" alt="耳饰" data-name="残鳍·渡澜" data-sub="Broken Fin · Crossing Waves">
+      <div class="gallery-cell-label"><h4>残鳍·渡澜</h4><p>Broken Fin · Crossing Waves</p></div>
+    </div>
+    <div class="gallery-cell" onclick="openLightbox(this)">
+      <img src="项饰.png" alt="项饰" data-name="锢甲·归潮" data-sub="Bound Shell · Tide Return">
+      <div class="gallery-cell-label"><h4>锢甲·归潮</h4><p>Bound Shell · Tide Return</p></div>
+    </div>
+    <div class="gallery-cell" onclick="openLightbox(this)">
+      <img src="头饰(1).png" alt="头饰" data-name="裂颅·逐光" data-sub="Cracked Skull · Chasing Light">
+      <div class="gallery-cell-label"><h4>裂颅·逐光</h4><p>Cracked Skull · Chasing Light</p></div>
+    </div>
+    <div class="gallery-cell" onclick="openLightbox(this)">
+      <img src="面饰.png" alt="面饰" data-name="浊触·凝愈" data-sub="Turbid Touch · Healing Still">
+      <div class="gallery-cell-label"><h4>浊触·凝愈</h4><p>Turbid Touch · Healing Still</p></div>
+    </div>
+    <div class="gallery-cell" onclick="openLightbox(this)">
+      <img src="手饰(1).png" alt="手饰" data-name="蚀礁·生芒" data-sub="Reef Erosion · Emerging Light">
+      <div class="gallery-cell-label"><h4>蚀礁·生芒</h4><p>Reef Erosion · Emerging Light</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- Lightbox -->
+<div id="lightbox">
+  <button class="lightbox-close" onclick="closeLightbox()">✕</button>
+  <img id="lightbox-img" src="" alt="">
+  <div class="lightbox-caption">
+    <h4 id="lightbox-name"></h4>
+    <p id="lightbox-sub"></p>
+  </div>
+</div>
+
+<!-- Footer -->
+<footer>
+  <div class="footer-inner">
+    <div>
+      <p class="footer-brand">残响<br>·<br>海殇</p>
+      <p class="footer-tagline">Ocean Elegy<br>Jewelry Collection<br>2024</p>
+    </div>
+    <div class="footer-manifesto reveal">
+      这五件作品，不是装饰品，是<strong>证词</strong>。<br><br>
+      每一条渔网的纹路，每一颗微塑料的颜色，每一道锈蚀的钩痕，都是真实发生在海洋深处的故事。我们将这些故事锻造成金属，让它们离皮肤更近，离心更近。<br><br>
+      因为只有<strong>感受到美</strong>，人才会开始在乎；只有<strong>在乎</strong>，才会去改变。
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>残响·海殇 · 海洋首饰系列</span>
+    <span>Ocean Elegy Collection</span>
+  </div>
+</footer>
+
+<script>
+// ── Custom Cursor ──
+const cursor = document.getElementById('cursor');
+const ring = document.getElementById('cursor-ring');
+let mx = 0, my = 0, rx = 0, ry = 0;
+document.addEventListener('mousemove', e => {
+  mx = e.clientX; my = e.clientY;
+  cursor.style.left = mx + 'px';
+  cursor.style.top = my + 'px';
+});
+function animRing() {
+  rx += (mx - rx) * .12;
+  ry += (my - ry) * .12;
+  ring.style.left = rx + 'px';
+  ring.style.top = ry + 'px';
+  requestAnimationFrame(animRing);
+}
+animRing();
+
+// ── Loader ──
+window.addEventListener('load', () => {
+  setTimeout(() => {
+    document.getElementById('loader').classList.add('hidden');
+  }, 1400);
+});
+
+// ── Nav scroll ──
+const nav = document.getElementById('nav');
+window.addEventListener('scroll', () => {
+  nav.classList.toggle('scrolled', window.scrollY > 60);
+}, { passive: true });
+
+// ── Scroll reveal ──
+const revealEls = document.querySelectorAll('.reveal, .reveal-left, .reveal-right');
+const io = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.classList.add('visible');
+    }
+  });
+}, { threshold: 0.12 });
+revealEls.forEach(el => io.observe(el));
+
+// ── Video Toggle ──
+function toggleVideo(visId, vidId) {
+  const vis = document.getElementById(visId);
+  const vid = document.getElementById(vidId);
+  if (vis.classList.contains('playing')) {
+    vis.classList.remove('playing');
+    vid.pause();
+  } else {
+    vis.classList.add('playing');
+    vid.play();
+  }
+}
+
+// ── Lightbox ──
+function openLightbox(cell) {
+  const img = cell.querySelector('img');
+  const lb = document.getElementById('lightbox');
+  document.getElementById('lightbox-img').src = img.src;
+  document.getElementById('lightbox-name').textContent = img.dataset.name;
+  document.getElementById('lightbox-sub').textContent = img.dataset.sub;
+  lb.classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+function closeLightbox() {
+  document.getElementById('lightbox').classList.remove('active');
+  document.body.style.overflow = '';
+}
+document.getElementById('lightbox').addEventListener('click', function(e) {
+  if (e.target === this) closeLightbox();
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeLightbox();
+});
+
+// ── Particle Canvas ──
+(function() {
+  const canvas = document.getElementById('particles');
+  const ctx = canvas.getContext('2d');
+  let W, H, particles = [];
+
+  function resize() {
+    W = canvas.width = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize, { passive: true });
+
+  for (let i = 0; i < 60; i++) {
+    particles.push({
+      x: Math.random() * window.innerWidth,
+      y: Math.random() * window.innerHeight,
+      r: Math.random() * 1.2 + .3,
+      vx: (Math.random() - .5) * .18,
+      vy: (Math.random() - .5) * .12,
+      a: Math.random() * .5 + .1,
+      hue: Math.random() * 40 + 190
+    });
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+    particles.forEach(p => {
+      p.x += p.vx;
+      p.y += p.vy;
+      if (p.x < 0) p.x = W;
+      if (p.x > W) p.x = 0;
+      if (p.y < 0) p.y = H;
+      if (p.y > H) p.y = 0;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fillStyle = `hsla(${p.hue}, 70%, 70%, ${p.a})`;
+      ctx.fill();
+    });
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+
+// ── Parallax on hero ──
+window.addEventListener('scroll', () => {
+  const y = window.scrollY;
+  const hv = document.getElementById('hero-video');
+  if (y < window.innerHeight) {
+    hv.style.transform = `translateY(${y * .3}px)`;
+  }
+}, { passive: true });
+
+// ── 3D tilt on product visuals ──
+document.querySelectorAll('.product-visual').forEach(el => {
+  el.addEventListener('mousemove', e => {
+    const rect = el.getBoundingClientRect();
+    const cx = rect.left + rect.width / 2;
+    const cy = rect.top + rect.height / 2;
+    const dx = (e.clientX - cx) / rect.width;
+    const dy = (e.clientY - cy) / rect.height;
+    el.style.transform = `perspective(900px) rotateY(${dx * 4}deg) rotateX(${-dy * 3}deg)`;
+  });
+  el.addEventListener('mouseleave', () => {
+    el.style.transform = 'perspective(900px) rotateY(0deg) rotateX(0deg)';
+    el.style.transition = 'transform .6s ease';
+    setTimeout(() => el.style.transition = '', 600);
+  });
+});
+</script>
+</body>
+</html>
