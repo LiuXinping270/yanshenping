@@ -471,7 +471,7 @@ const POLLUTION = [
    color:'#8B3A2A'},
   {id:3,name:'残鳍・渡澜',cat:'耳饰',en:'Broken Fin · Crossing Tides',
    img:'成图、虚拟视频、动态海报/耳饰.png',
-   vid:'https://github.com/LiuXinping270/yanshenping/releases/download/v1.0/_._._.mp4',
+   vid:'https://github.com/LiuXinping270/yanshenping/releases/download/v1.0/vr_ear.mp4',
    desc:'残损的鱼鳍垂落耳畔，穿越风浪的姿态定格在金属之中。每一次摇曳皆是对消逝生命的哀悼。',
    color:'#264A52'},
   {id:4,name:'锢甲・归潮',cat:'项饰',en:'Armored Shell · Returning Tide',
@@ -675,7 +675,7 @@ function addMagnetic(el,str=.35){
   const strip=document.getElementById('p-videos');
   strip.innerHTML=`
     <div class="vid-main">
-      <video autoplay muted loop playsinline><source src="${enc(P_VIDEOS[0].src)}"></video>
+      <video autoplay muted loop playsinline><source src="${P_VIDEOS[0].src}"></video>
       <div class="vid-main-label">
         <div class="vid-main-title">${P_VIDEOS[0].title}</div>
         <div class="vid-main-sub">${P_VIDEOS[0].sub}</div>
@@ -685,7 +685,7 @@ function addMagnetic(el,str=.35){
       ${P_VIDEOS.map((v,i)=>`
         <div class="vid-poster" onclick="togglePosterVid(this)">
           <div class="vid-poster-wrap">
-            <video src="${enc(v.src)}" muted loop playsinline></video>
+            <video src="${v.src}" muted loop playsinline></video>
             <div class="vid-poster-play"><div class="vp-btn">▶</div></div>
           </div>
           <div class="vp-label">影像 ${['Ⅰ','Ⅱ'][i]}</div>
@@ -819,7 +819,7 @@ function showModalImg(){
 function showModalVid(){
   const img=document.getElementById('m-img');
   const vid=document.getElementById('m-vid');
-  if(curPiece&&curPiece.vid){vid.src=enc(curPiece.vid);vid.load();vid.play();}
+  if(curPiece&&curPiece.vid){vid.src=curPiece.vid;vid.load();vid.play();}
   img.style.display='none';vid.style.display='block';
   document.getElementById('m-tab-vid').classList.add('on');
   document.getElementById('m-tab-img').classList.remove('on');
