@@ -108,7 +108,6 @@ body.hover-btn .cur-ring{width:52px;height:52px}
 .sec-desc{font-size:.78rem;line-height:2.1;letter-spacing:.06em;opacity:.45;max-width:520px;margin-top:2rem}
 .thin-line{height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.08),transparent)}
 .progress-bar{position:fixed;top:0;left:0;height:1px;background:linear-gradient(90deg,var(--copper),var(--teal));z-index:9999;width:0}
-#hero,#act1,#act2,#transition,footer{position:relative;z-index:1}
 
 /* ════════════════════════════════
    ACT HEADER
@@ -122,15 +121,14 @@ body.hover-btn .cur-ring{width:52px;height:52px}
 /* ════════════════════════════════
    HORIZONTAL GALLERY
 ════════════════════════════════ */
-.gallery-outer{overflow-x:auto;overflow-y:visible;position:relative;-webkit-overflow-scrolling:touch;scrollbar-width:none}
-.gallery-outer::-webkit-scrollbar{display:none}
-.gallery-track{display:flex;gap:clamp(2px,0.3vw,8px);padding:0 clamp(1.5rem,5vw,5rem) 5rem;width:max-content;user-select:none;touch-action:pan-x}
-@media(max-width:900px){.gallery-track{padding:0 1.5rem 3rem}}
+.gallery-outer{overflow:hidden;position:relative}
+.gallery-track{display:flex;gap:2px;padding:0 5rem 5rem;width:max-content;user-select:none}
+@media(max-width:700px){.gallery-track{padding:0 1.5rem 3rem}}
 
 /* ════════════════════════════════
    JEWELRY CARD (3D Tilt)
 ════════════════════════════════ */
-.jcard{width:clamp(240px,72vw,360px);flex-shrink:0;position:relative;overflow:hidden;transform-style:preserve-3d;will-change:transform;transition:box-shadow .5s}
+.jcard{width:360px;flex-shrink:0;position:relative;overflow:hidden;transform-style:preserve-3d;will-change:transform;transition:box-shadow .5s}
 .jcard.pollution{border:1px solid rgba(194,123,82,.1)}
 .jcard.healing{border:1px solid rgba(74,186,186,.1)}
 .jcard:hover{box-shadow:0 30px 80px rgba(0,0,0,.7),0 0 60px rgba(0,0,0,.4)}
@@ -292,66 +290,10 @@ footer{padding:5rem 5rem 4rem;border-top:1px solid rgba(255,255,255,.04)}
 [data-reveal="left"]{transform:translateX(-28px)}
 [data-reveal="right"]{transform:translateX(28px)}
 [data-reveal].revealed{opacity:1!important;transform:none!important;transition:opacity .9s ease,transform .9s ease}
-
-/* ════════════════════════════════
-   PARTICLE CANVAS
-════════════════════════════════ */
-#pts-canvas{position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.8}
-
-/* ════════════════════════════════
-   RESPONSIVE PATCHES
-════════════════════════════════ */
-/* Tablets */
-@media(max-width:1024px){
-  .act-header{padding:7rem 3rem 4rem}
-  .video-section{padding:0 3rem 5rem}
-  .showcase{margin:0 3rem 4rem}
-  footer{padding:4rem 3rem 3rem}
-  #nav,#nav.sc{padding:1.2rem 3rem}
-  .ft-grid{gap:2.5rem}
-}
-/* Mobile */
-@media(max-width:700px){
-  .act-header{padding:5rem 1.4rem 3rem}
-  .act-bg-num{font-size:10rem;right:0.5rem;top:3rem}
-  .video-section{padding:0 1.2rem 3.5rem}
-  .showcase{margin:0 1.2rem 3rem}
-  .showcase-lname{font-size:1rem}
-  .video-grid.g2{grid-template-columns:1fr}
-  .video-grid.g4{grid-template-columns:1fr 1fr}
-  footer{padding:3rem 1.4rem 2.5rem}
-  #nav,#nav.sc{padding:.9rem 1.4rem}
-  .ft-grid{gap:2rem}
-  .ft-bot{flex-direction:column;gap:.8rem;align-items:flex-start}
-  #modal{grid-template-columns:1fr}
-  .modal-vis{min-height:280px}
-  .modal-info{padding:1.8rem 1.4rem}
-  .jcard-info{transform:translateY(0);padding:1.2rem 1.4rem 1.6rem}
-  .jcard-desc{-webkit-line-clamp:2}
-  .trans-quote{font-size:.9rem;padding:0 1rem}
-  .hero-content{padding:0 1.2rem}
-  .hero-blurb{max-width:160px;font-size:.68rem}
-  .sec-desc{font-size:.74rem}
-  #transition{height:40vh}
-}
-/* Very small */
-@media(max-width:400px){
-  .jcard{width:82vw}
-  .video-grid.g4{grid-template-columns:1fr}
-  .sec-title{font-size:2.4rem}
-  .hero-title{font-size:2.6rem}
-}
-/* Ensure modal scrolls on small screens */
-@media(max-height:700px){
-  .modal-vis{min-height:220px}
-  .modal-vis img,.modal-vis video{max-height:260px}
-  .modal-info{padding:1.5rem}
-}
 </style>
 </head>
 <body>
 
-<canvas id="pts-canvas"></canvas>
 <div class="progress-bar" id="pbar"></div>
 <div id="cur"><div class="cur-dot"></div></div>
 <div class="cur-ring" id="cur-r"></div>
@@ -382,7 +324,7 @@ footer{padding:5rem 5rem 4rem;border-top:1px solid rgba(255,255,255,.04)}
 ══════════════════════════════ -->
 <section id="hero">
   <div class="hero-half" id="hp-p">
-    <div class="hero-bg" id="hbg-p"></div>
+    <div class="hero-bg" id="hbg-p" style="background-image:url('成图、虚拟视频、动态海报/面饰.png')"></div>
     <div class="hero-veil-p"></div>
     <div class="hero-content" data-reveal>
       <div class="hero-series-num" style="color:rgba(194,123,82,.6)">Series Ⅰ</div>
@@ -393,7 +335,7 @@ footer{padding:5rem 5rem 4rem;border-top:1px solid rgba(255,255,255,.04)}
   </div>
   <div class="hero-divider"></div>
   <div class="hero-half" id="hp-h">
-    <div class="hero-bg" id="hbg-h"></div>
+    <div class="hero-bg" id="hbg-h" style="background-image:url('彭思睿 衍生品/彭思睿 衍生品/白底图/海洋救赎头饰-守护修复-纯饰品白底.png')"></div>
     <div class="hero-veil-h"></div>
     <div class="hero-content" data-reveal>
       <div class="hero-series-num" style="color:rgba(74,186,186,.6)">Series Ⅱ</div>
@@ -565,125 +507,6 @@ footer{padding:5rem 5rem 4rem;border-top:1px solid rgba(255,255,255,.04)}
 gsap.registerPlugin(ScrollTrigger, ScrollToPlugin);
 
 const enc = p => p.split('/').map(s => encodeURIComponent(s)).join('/');
-
-/* ════════ PARTICLES ════════ */
-(()=>{
-  const cvs = document.getElementById('pts-canvas');
-  const ctx = cvs.getContext('2d');
-  let W,H,mouse={x:-999,y:-999},scrollRatio=0;
-
-  function resize(){
-    W = cvs.width = innerWidth;
-    H = cvs.height = innerHeight;
-  }
-  resize();
-  addEventListener('resize', resize);
-  addEventListener('mousemove', e=>{ mouse.x=e.clientX; mouse.y=e.clientY; });
-  addEventListener('scroll', ()=>{
-    const dh = document.documentElement.scrollHeight - innerHeight;
-    scrollRatio = Math.max(0, Math.min(1, scrollY / dh));
-  });
-
-  // Create particles
-  const N = window.innerWidth < 700 ? 45 : 75;
-  const pts = Array.from({length:N}, ()=>({
-    x: Math.random()*innerWidth,
-    y: Math.random()*innerHeight,
-    vx: (Math.random()-.5)*.35,
-    vy: (Math.random()-.5)*.35,
-    r: Math.random()*1.6+.4,
-    life: Math.random()*Math.PI*2, // phase offset for pulse
-    speed: .005 + Math.random()*.008
-  }));
-
-  // Color lerp: copper → teal
-  function ptColor(t, alpha){
-    const r = Math.round(194*(1-t) + 74*t);
-    const g = Math.round(123*(1-t) + 186*t);
-    const b = Math.round(82*(1-t) + 186*t);
-    return `rgba(${r},${g},${b},${alpha})`;
-  }
-
-  let lastTime = 0;
-  function draw(ts){
-    const dt = Math.min((ts - lastTime)/16, 3); lastTime = ts;
-    // Clear canvas fully each frame (canvas is overlay, must stay transparent)
-    ctx.clearRect(0,0,W,H);
-
-    const t = scrollRatio;
-
-    pts.forEach(p=>{
-      p.life += p.speed;
-      // Mouse repulsion
-      const dx = p.x - mouse.x;
-      const dy = p.y - mouse.y;
-      const dist = Math.sqrt(dx*dx+dy*dy);
-      if(dist < 130 && dist > 0){
-        const force = (130-dist)/130 * 1.8;
-        p.vx += (dx/dist)*force*dt;
-        p.vy += (dy/dist)*force*dt;
-      }
-      // Gentle drift
-      p.vx += (Math.random()-.5)*0.04*dt;
-      p.vy += (Math.random()-.5)*0.04*dt;
-      // Damping
-      const spd = Math.sqrt(p.vx*p.vx+p.vy*p.vy);
-      if(spd > 2.5){ p.vx=p.vx/spd*2.5; p.vy=p.vy/spd*2.5; }
-      p.vx *= .96; p.vy *= .96;
-      p.x += p.vx*dt; p.y += p.vy*dt;
-      // Wrap
-      if(p.x<-20)p.x=W+20; if(p.x>W+20)p.x=-20;
-      if(p.y<-20)p.y=H+20; if(p.y>H+20)p.y=-20;
-
-      // Draw dot with pulse
-      const pulse = .5 + Math.sin(p.life)*.5;
-      const alpha = (.25 + pulse*.35) * (dist<130 ? Math.min(1,dist/60+.4) : 1);
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, p.r*(1+pulse*.3), 0, Math.PI*2);
-      ctx.fillStyle = ptColor(t, alpha);
-      ctx.fill();
-
-      // Glow on mouse proximity
-      if(dist < 100){
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.r*3, 0, Math.PI*2);
-        ctx.fillStyle = ptColor(t, (1-dist/100)*.15);
-        ctx.fill();
-      }
-    });
-
-    // Connection lines
-    for(let i=0;i<pts.length;i++){
-      for(let j=i+1;j<pts.length;j++){
-        const dx=pts[i].x-pts[j].x, dy=pts[i].y-pts[j].y;
-        const d=Math.sqrt(dx*dx+dy*dy);
-        if(d<90){
-          const alpha=(1-d/90)*.18;
-          ctx.beginPath();
-          ctx.moveTo(pts[i].x,pts[i].y);
-          ctx.lineTo(pts[j].x,pts[j].y);
-          ctx.strokeStyle=ptColor(t,alpha);
-          ctx.lineWidth=.6;
-          ctx.stroke();
-        }
-      }
-    }
-
-    // Mouse halo
-    if(mouse.x>0){
-      const grad=ctx.createRadialGradient(mouse.x,mouse.y,0,mouse.x,mouse.y,80);
-      grad.addColorStop(0, ptColor(t, .06));
-      grad.addColorStop(1, 'transparent');
-      ctx.beginPath();
-      ctx.arc(mouse.x,mouse.y,80,0,Math.PI*2);
-      ctx.fillStyle=grad;
-      ctx.fill();
-    }
-
-    requestAnimationFrame(draw);
-  }
-  requestAnimationFrame(draw);
-})();
 const CDN = 'https://github.com/LiuXinping270/yanshenping/releases/download/v1.0';
 
 /* ════════ DATA ════════ */
@@ -918,24 +741,12 @@ buildVideoCards(H_POSTERS,'h-poster-grid','#4ABABA','tall');
   stop.onclick=()=>{vid.pause();vid.load();ui.classList.remove('playing');stop.classList.remove('vis');};
 })();
 
-/* ════════ DRAG + TOUCH SCROLL ════════ */
+/* ════════ DRAG SCROLL ════════ */
 function initDrag(track){
-  // Mouse drag
-  let down=false,sx=0,sl=0,moved=false;
-  track.addEventListener('mousedown',e=>{down=true;moved=false;sx=e.pageX;sl=track.scrollLeft;track.style.cursor='grabbing';});
+  let down=false,sx=0,sl=0;
+  track.addEventListener('mousedown',e=>{down=true;sx=e.pageX;sl=track.scrollLeft;track.style.cursor='grabbing';});
   addEventListener('mouseup',()=>{down=false;track.style.cursor='';});
-  track.addEventListener('mousemove',e=>{
-    if(!down)return;
-    const dx=e.pageX-sx;
-    if(Math.abs(dx)>4)moved=true;
-    track.scrollLeft=sl-dx*1.2;
-  });
-  // Prevent click when dragged
-  track.addEventListener('click',e=>{if(moved){e.stopPropagation();moved=false;}});
-  // Touch
-  let tx=0,tl=0;
-  track.addEventListener('touchstart',e=>{tx=e.touches[0].pageX;tl=track.scrollLeft;},{passive:true});
-  track.addEventListener('touchmove',e=>{track.scrollLeft=tl-(e.touches[0].pageX-tx);},{passive:true});
+  track.addEventListener('mousemove',e=>{if(!down)return;e.preventDefault();track.scrollLeft=sl-(e.pageX-sx)*1.3;});
 }
 
 /* ════════ MODAL ════════ */
@@ -1007,10 +818,6 @@ addMag(document.getElementById('m-close'),.5);
     obs.observe(el);
   });
 })();
-
-/* ════════ HERO BG IMAGES (encoded) ════════ */
-document.getElementById('hbg-p').style.backgroundImage=`url('${enc('成图、虚拟视频、动态海报/面饰.png')}')`;
-document.getElementById('hbg-h').style.backgroundImage=`url('${enc('彭思睿 衍生品/彭思睿 衍生品/白底图/海洋救赎头饰-守护修复-纯饰品白底.png')}')`;
 
 /* ════════ HERO MOUSE PARALLAX ════════ */
 addEventListener('mousemove',e=>{
