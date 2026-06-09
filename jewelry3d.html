@@ -108,6 +108,7 @@ body.hover-btn .cur-ring{width:52px;height:52px}
 .sec-desc{font-size:.78rem;line-height:2.1;letter-spacing:.06em;opacity:.45;max-width:520px;margin-top:2rem}
 .thin-line{height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.08),transparent)}
 .progress-bar{position:fixed;top:0;left:0;height:1px;background:linear-gradient(90deg,var(--copper),var(--teal));z-index:9999;width:0}
+#hero,#act1,#act2,#transition,footer{position:relative;z-index:1}
 
 /* ════════════════════════════════
    ACT HEADER
@@ -295,7 +296,7 @@ footer{padding:5rem 5rem 4rem;border-top:1px solid rgba(255,255,255,.04)}
 /* ════════════════════════════════
    PARTICLE CANVAS
 ════════════════════════════════ */
-#pts-canvas{position:fixed;inset:0;pointer-events:none;z-index:2;opacity:1}
+#pts-canvas{position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.8}
 
 /* ════════════════════════════════
    RESPONSIVE PATCHES
@@ -606,9 +607,8 @@ const enc = p => p.split('/').map(s => encodeURIComponent(s)).join('/');
   let lastTime = 0;
   function draw(ts){
     const dt = Math.min((ts - lastTime)/16, 3); lastTime = ts;
-    // Clear with semi-transparent wash for trail effect
-    ctx.fillStyle = 'rgba(8,6,14,0.18)';
-    ctx.fillRect(0,0,W,H);
+    // Clear canvas fully each frame (canvas is overlay, must stay transparent)
+    ctx.clearRect(0,0,W,H);
 
     const t = scrollRatio;
 
