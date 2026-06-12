@@ -551,10 +551,10 @@ const PVIDS = [
   {src:`${CDN}/p_poster2.mp4`,title:'污·殇 影像 Ⅱ'},
 ];
 const HPOST = [
-  {vid:`${CDN}/h_poster1.mp4`,cover:'彭思睿 衍生品/彭思睿 衍生品/静态海报/动态海报1-封面.jpg',name:'愈·生 Ⅰ'},
+  {vid:`${CDN}/1.mp4`,cover:'彭思睿 衍生品/彭思睿 衍生品/静态海报/动态海报1-封面.jpg',name:'愈·生 Ⅰ'},
   {vid:`${CDN}/h_poster2.mp4`,cover:'彭思睿 衍生品/彭思睿 衍生品/静态海报/动态海报2-封面.jpg',name:'愈·生 Ⅱ'},
-  {vid:`${CDN}/h_poster3.mp4`,cover:'彭思睿 衍生品/彭思睿 衍生品/静态海报/动态海报3-封面.jpg',name:'愈·生 Ⅲ'},
-  {vid:`${CDN}/h_poster4.mp4`,cover:'彭思睿 衍生品/彭思睿 衍生品/静态海报/动态海报4-封面.jpg',name:'愈·生 Ⅳ'},
+  {vid:`${CDN}/3.mp4`,cover:'彭思睿 衍生品/彭思睿 衍生品/静态海报/动态海报3-封面.jpg',name:'愈·生 Ⅲ'},
+  {vid:`${CDN}/4.mp4`,cover:'彭思睿 衍生品/彭思睿 衍生品/静态海报/动态海报4-封面.jpg',name:'愈·生 Ⅳ'},
 ];
 
 /* ── Loader ── */
@@ -731,7 +731,7 @@ gsap.from('#htrack .jcard',{scrollTrigger:{trigger:'#htrack',start:'top 85%'},op
   const vid=document.getElementById('showcase-vid');
   const playBtn=document.getElementById('sc-play');
   const stopBtn=document.getElementById('sc-stop');
-  vid.dataset.src=`${CDN}/h_showcase.mp4`;
+  vid.dataset.src=`${CDN}/default.mp4`;
 
   playBtn.addEventListener('click',()=>{
     if(!vid.src){vid.src=vid.dataset.src;vid.load();}
