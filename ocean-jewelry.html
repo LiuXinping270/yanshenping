@@ -253,9 +253,7 @@ img,video { display:block; }
 .pcard { position:relative;border-radius:.75rem;overflow:hidden;cursor:none;aspect-ratio:.62;
   transition:box-shadow .4s; }
 .pcard:hover { box-shadow:0 0 40px rgba(255,255,255,.04); }
-.pcard video { width:100%;height:100%;object-fit:cover;display:block; }
-.pcard-vid-wrap { position:absolute;inset:0;display:none; }
-.pcard-vid-wrap.vis { display:block; }
+.pcard video { width:100%;height:100%;object-fit:cover;display:block;opacity:0;transition:opacity .5s; }
 .pcard-ui { position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
   background:rgba(0,0,0,.35);transition:background .3s; }
 .pcard:hover .pcard-ui { background:rgba(0,0,0,.15); }
@@ -639,13 +637,7 @@ const vidObs=new IntersectionObserver(entries=>{
     if(e.isIntersecting){
       const v=e.target;
       const ds=v.dataset.src;
-      /* pcard videos: only preload, never auto-show (user clicks play) */
-      if(ds&&!v.src){
-        v.src=ds;v.load();
-        if(!v.closest('.pcard')){
-          v.addEventListener('canplay',()=>gsap.to(v,{opacity:1,duration:.6}),{once:true});
-        }
-      }
+      if(ds&&!v.src){v.src=ds;v.load();v.addEventListener('canplay',()=>gsap.to(v,{opacity:1,duration:.6}),{once:true});}
       vidObs.unobserve(v);
     }
   });
@@ -765,28 +757,25 @@ gsap.from('#htrack .jcard',{scrollTrigger:{trigger:'#htrack',start:'top 85%'},op
     const card=document.createElement('div');
     card.className='pcard lg';
     card.innerHTML=`
-      <div class="pcard-vid-wrap" id="pvw${i}">
-        <video muted loop playsinline preload="none" data-src="${p.vid}" poster="${enc(p.cover)}"></video>
-      </div>
+      <video muted loop playsinline preload="none" data-src="${p.vid}" poster="${enc(p.cover)}"></video>
       <div class="pcard-ui" id="pui${i}"><div class="play-ring" style="width:44px;height:44px">▶</div></div>
       <button class="pcard-stop" id="pst${i}">■</button>
       <div class="pcard-lbl"><div class="pcard-name">${p.name}</div></div>`;
 
     const vid=card.querySelector('video');
-    const wrap=card.querySelector('.pcard-vid-wrap');
     const ui=card.querySelector('.pcard-ui');
     const stop=card.querySelector('.pcard-stop');
     vidObs.observe(vid);
 
     ui.querySelector('.play-ring').addEventListener('click',()=>{
-      if(playingVid&&playingVid!==vid){playingVid.pause();document.getElementById('pvw'+playingIdx).classList.remove('vis');document.getElementById('pui'+playingIdx).classList.remove('gone');document.getElementById('pst'+playingIdx).classList.remove('vis');}
+      if(playingVid&&playingVid!==vid){playingVid.pause();gsap.to(playingVid,{opacity:0,duration:.3});document.getElementById('pui'+playingIdx).classList.remove('gone');document.getElementById('pst'+playingIdx).classList.remove('vis');}
       if(!vid.src){vid.src=vid.dataset.src;vid.load();}
       vid.play().catch(()=>{});
-      wrap.classList.add('vis');
+      gsap.to(vid,{opacity:1,duration:.5});
       ui.classList.add('gone');stop.classList.add('vis');
       playingVid=vid;playingIdx=i;
     });
-    stop.addEventListener('click',e=>{e.stopPropagation();vid.pause();wrap.classList.remove('vis');ui.classList.remove('gone');stop.classList.remove('vis');playingVid=null;playingIdx=null;});
+    stop.addEventListener('click',e=>{e.stopPropagation();vid.pause();gsap.to(vid,{opacity:0,duration:.3});ui.classList.remove('gone');stop.classList.remove('vis');playingVid=null;playingIdx=null;});
     grid.appendChild(card);
   });
 })();
