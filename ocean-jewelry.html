@@ -637,7 +637,13 @@ const vidObs=new IntersectionObserver(entries=>{
     if(e.isIntersecting){
       const v=e.target;
       const ds=v.dataset.src;
-      if(ds&&!v.src){v.src=ds;v.load();v.addEventListener('canplay',()=>gsap.to(v,{opacity:1,duration:.6}),{once:true});}
+      /* pcard videos: only preload, never auto-show (user clicks play) */
+      if(ds&&!v.src){
+        v.src=ds;v.load();
+        if(!v.closest('.pcard')){
+          v.addEventListener('canplay',()=>gsap.to(v,{opacity:1,duration:.6}),{once:true});
+        }
+      }
       vidObs.unobserve(v);
     }
   });
