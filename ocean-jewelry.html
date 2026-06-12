@@ -852,7 +852,7 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')closeMod();});
       this.wobble=Math.random()*Math.PI*2;
       this.wobbleSpeed=.012+Math.random()*.018;
       this.alpha=0;
-      this.targetAlpha=.18+Math.random()*.22;
+      this.targetAlpha=.32+Math.random()*.38;
       this.life=1; /* 1=alive, shrinking toward 0 */
       this.dying=false;
       this.highlight=Math.random()*.6+.3;
@@ -873,9 +873,9 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')closeMod();});
       /* outer rim */
       const g=ctx.createRadialGradient(this.x,this.y,this.r*.1,this.x,this.y,this.r);
       g.addColorStop(0,'rgba(220,240,255,0)');
-      g.addColorStop(.75,'rgba(180,220,255,.08)');
-      g.addColorStop(.92,'rgba(160,210,255,.35)');
-      g.addColorStop(1,'rgba(200,235,255,.55)');
+      g.addColorStop(.72,'rgba(180,220,255,.15)');
+      g.addColorStop(.90,'rgba(160,210,255,.55)');
+      g.addColorStop(1,'rgba(200,235,255,.80)');
       ctx.beginPath();ctx.arc(this.x,this.y,this.r,0,Math.PI*2);
       ctx.fillStyle=g;ctx.fill();
       /* sheen highlight */
@@ -931,11 +931,19 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')closeMod();});
 
   const bubbles=[];
   const sparks=[];
-  const MAX=38;
+  const MAX=42;
+
+  /* 页面加载就预填气泡，分布在屏幕各处 */
+  for(let i=0;i<22;i++){
+    const r=5+Math.random()*22;
+    const b=new Bubble(Math.random()*W, Math.random()*H, r);
+    b.alpha=b.targetAlpha*(Math.random()*.8+.2); /* 随机初始透明度 */
+    bubbles.push(b);
+  }
 
   function spawn(){
     if(bubbles.length<MAX) bubbles.push(new Bubble());
-    setTimeout(spawn,600+Math.random()*1200);
+    setTimeout(spawn,800+Math.random()*1600);
   }
   spawn();
 
